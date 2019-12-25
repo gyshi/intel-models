@@ -22,13 +22,13 @@ import time
 from argparse import ArgumentParser
 
 import tensorflow as tf
-import tensorflow.tools.graph_transforms as graph_transforms
+from tensorflow.tools.graph_transforms import TransformGraph
 
 import datasets
 import numpy as np
 
 INPUTS = 'input'
-OUTPUTS = 'predict'
+OUTPUTS = 'resnet_v1_50/predictions/Reshape_1'
 OPTIMIZATION = 'strip_unused_nodes remove_nodes(op=Identity, op=CheckNumerics) fold_constants(ignore_errors=true) fold_batch_norms fold_old_batch_norms'
 
 RESNET_IMAGE_SIZE = 224
@@ -157,13 +157,13 @@ class eval_classifier_optimized_graph:
         input_graph_content = input_file.read()
         graph_def.ParseFromString(input_graph_content)
 
-      output_graph = graph_transforms.TransformGraph(graph_def,
+      output_graph = TransformGraph(graph_def,
                                          [INPUTS], [OUTPUTS], [OPTIMIZATION])
       tf.import_graph_def(output_graph, name='')
 
     # Definite input and output Tensors for detection_graph
     input_tensor = infer_graph.get_tensor_by_name('input:0')
-    output_tensor = infer_graph.get_tensor_by_name('predict:0')
+    output_tensor = infer_graph.get_tensor_by_name('resnet_v1_50/predictions/Reshape_1:0')
 
     data_sess = tf.Session(graph=data_graph,  config=data_config)
     infer_sess = tf.Session(graph=infer_graph, config=infer_config)
